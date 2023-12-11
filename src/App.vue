@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios'
-import EpisodeCard from './components/EpisodeCard.vue';
+// import EpisodeCard from './components/EpisodeCard.vue';
 import {ref} from 'vue'
 
 const episodes = ref([])
@@ -13,26 +13,39 @@ async function getEpisodes(){
   episodes.value = result.data;
 
 
-  episodes.forEach(element => {
+  episodes.value.forEach(element => {
     if (!seasonNmb.value.includes(element.season)) {
       seasonNmb.value.push(element.season)
     }
   });
 }
-</script>
 
+
+async function episodesBySeasons(season){
+  let result = await axios.get('http://127.0.0.1:8000/api/episodes/' + season)
+  episodes.value = result.data
+}
+</script>
 <template>
   <div class="container">
-    <div class="btn-group">
-  <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-    Seasons
-  </button>
-  <ul class="dropdown-menu dropdown-menu-end">
-    <li v-for="nmb in seasonNmb">{{ nmb }}</li>
-  </ul>
-</div>
-
-    <episode-card  v-for="episode in episodes" :episode="episode"></episode-card>
+    <select class="form-select"  aria-label="Default select example" v-model="season"  @change="episodesBySeasons(season)">
+      <option v-for="nmb in seasonNmb" :value="nmb">{{ nmb }}</option>
+    </select>
+    <button class="btn btn-primary" @click="getEpisodes()">All episodes</button>
+   
+    <div class="row ">
+      <div v-for="episode in episodes" class="col-md-3">
+        <div class="card mb-1" style="height: 30rem;">
+          <img :src="episode.imageoriginal" class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title">{{ episode.name }}</h5>
+            <div>
+              <span v-html="episode.summary" class="card-text"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
